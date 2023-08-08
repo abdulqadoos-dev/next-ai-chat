@@ -1,11 +1,11 @@
 import { kv } from '@vercel/kv'
+import {Client} from '@/lib/database/redis';
 import { OpenAIStream, StreamingTextResponse } from 'ai'
 import { Configuration, OpenAIApi } from 'openai-edge'
-
 import { auth } from '@/auth'
 import { nanoid } from '@/lib/utils'
 
-export const runtime = 'edge'
+// export const runtime = 'edge'
 
 const configuration = new Configuration({
   apiKey: process.env.OPENAI_API_KEY
@@ -14,6 +14,7 @@ const configuration = new Configuration({
 const openai = new OpenAIApi(configuration)
 
 export async function POST(req: Request) {
+
   const json = await req.json()
   const { messages, previewToken } = json
   const userId = (await auth())?.user.id
@@ -55,11 +56,19 @@ export async function POST(req: Request) {
           }
         ]
       }
-      await kv.hmset(`chat:${id}`, payload)
-      await kv.zadd(`user:chat:${userId}`, {
-        score: createdAt,
-        member: `chat:${id}`
-      })
+
+      await Client.connect();
+      await Client.hSet(`chat:${id}`, 'dataset', JSON.stringify(payload));
+      await Client.hSet(`user:chat:${userId}`, 'relations', JSON.stringify({
+          score: createdAt,
+          member: `chat:${id}`
+        }));
+      
+      // await kv.hmset(`chat:${id}`, payload)
+      // await kv.zadd(`user:chat:${userId}`, {
+      //   score: createdAt,
+      //   member: `chat:${id}`
+      // })
     }
   })
 
