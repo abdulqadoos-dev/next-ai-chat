@@ -3,7 +3,7 @@
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { kv } from '@vercel/kv'
-
+import {Client} from '@/lib/database/redis';
 import { auth } from '@/auth'
 import { type Chat } from '@/lib/types'
 
@@ -31,12 +31,13 @@ export async function getChats(userId?: string | null) {
 }
 
 export async function getChat(id: string, userId: string) {
-  const chat = await kv.hgetall<Chat>(`chat:${id}`)
 
+  await Client.connect();
+  const chat = await Client.hGetAll(`chat:${id}`)
+  console.log(chat, "chat");
   if (!chat || (userId && chat.userId !== userId)) {
     return null
   }
-
   return chat
 }
 
