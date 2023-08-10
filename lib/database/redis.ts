@@ -5,21 +5,9 @@ export const Client = createClient({
 });
 
 export async function connect() {
+  console.log(!Client.isOpen)
   if (!Client.isOpen) {
       await Client.connect();
   }
 }
-
-Client.on('connect', () => {
-  console.log('Connected to Redis');
-});
-
-Client.on('error', err => {
-  console.error('Error connecting to Redis:', err);
-});
-
-Client.on('end', () => {
-  console.log('Connection to Redis has ended');
-});
-
 
