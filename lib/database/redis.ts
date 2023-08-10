@@ -5,7 +5,6 @@ export const Client = createClient({
 });
 
 export async function connect() {
-  console.log(!Client.isOpen)
   if (!Client.isOpen) {
       await Client.connect();
   }
